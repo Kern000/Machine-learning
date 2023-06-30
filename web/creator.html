@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, maximum-scale=0.9, user-scalable=0">  <!-- after adding this, sketchpad no longer works because eventlisteners for touch is diff from eventListeners of the mouse -->
+    <meta charset="UTF-8"/>      <!--allow emoji-->
+    <title>Data Creator</title>
+    <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+    <div id="content">
+        <h1> Data Creator </h1>
+        <div>
+            <input id="student" type="text" placeholder="Type your name"/>
+            <span id="instructions"></span>
+            <button id="advanceBtn" onclick="start();">  <!--start function to be defined-->
+            Start 
+            </button>
+        </div>
+        <br>
+        <div id="sketchPadContainer"
+        style="visibility:hidden">                  <!--Make invis but still take up space-->
+        </div>
+    </div>
+    <script src="../common/draw.js"></script>
+    <script src="js/sketchPad.js"></script>
+
+    <script>
+
+        let index=0;
+        const labels=["car","fish","house","tree","bicycle","guitar","pencil","clock"];
+
+        const data={
+            student:null,
+            session:new Date().getTime(),
+            drawings:{}                            
+        };
+        const sketchPad=
+            new SketchPad(sketchPadContainer);   
+        function start(){
+            if(student.value==""){
+                alert("Please type your name.");
+                return;            // break start function here to stop further action
+            }
+            data.student=student.value;
+            student.style.display='none';
+            sketchPadContainer.style.visibility="visible";
+
+            const label=labels[index]
+            instructions.innerHTML="Please draw a "+label;
+            advanceBtn.innerHTML="Next";
+            advanceBtn.onclick=next;
+            }           // in JS can access html elements by their IDs without getElementById() method
+            function next(){
+                if(sketchPad.paths.length==0){
+                    alert("Draw something first!");  //notice this is referencing the other file's paths array
+                    return;
+                }
+                const label=labels[index];
+                data.drawings[label]=sketchPad.paths; //create new key-value pairs based on label and sketchpaths respectively
+                sketchPad.reset();              //reset() not defined at first, but it is just #redraw, paths=[], and this.isDrawing=false;
+
+                index++;
+                if(index<labels.length){
+                    const nextLabel=labels[index];
+                    instructions.innerHTML="Please draw a "+nextLabel;
+                }else{
+                    sketchPadContainer.style.visibility="hidden";
+                    instructions.innerHTML="Thank you!";
+                    advanceBtn.innerHTML="Save Data";
+                    advanceBtn.onclick=save;
+                }
+
+                function save(){
+                    advanceBtn.style.display='none';
+                    instructions.innerHTML='Take downloaded file and place it alongside the others in dataset';
+
+                    const element=document.createElement('a');
+                    element.setAttribute('href',
+                        'data:text/plain;charset=utf-8,'+           //create data url that represents a plain text file containing JSON stringified version of 'data' object
+                        encodeURIComponent(JSON.stringify(data))    //encode JSON string to make it URL-safe by escaping special characters
+                    )
+                    // 'data:' indicate url represents embedded data
+                    // 'text/plain' specify MIME type of data as plain text file
+                    // encodeURIComponent(JSON.stringify(data)) This is 2nd part of URL tt repr actual data encoded as URI component - JSON.stringify(data) converts the data into JSON string - text file only accept string
+                    // const str=JSON.stringify(data); const obj=JSON.parse(str); to convert str back into an object
+
+                    const fileName=data.session+".json"; //define format
+                    element.setAttribute('download', fileName); //download attribute instr browser to download when click rather than navigate to URL - prompts user to define exact download location
+                    element.style.display='none';
+                    document.body.appendChild(element);
+                    element.click();                        //triggers click event on element - which browser here interprets as 'download' due to attribute
+                    document.body.removeChild(element);
+                }
+            }
+    </script>                                       
+    
+</body>
+</html>
+
+
+<!-- Notes
+scope:
+1. K Neighbor classifier - vectors
+2. Decision Boundaries
+3. High dimensions - meaning 2D -> 3D though in system design can also mean handling multiple layers
+4. Neural Networks
+5. Data Cleaning
+6. Clustering
+7. Graphs
+-->
